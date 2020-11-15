@@ -12,8 +12,6 @@ Lecture1-Overview
 2. 编译器一般而言是将一种语言转换成另一个语言，例如GopherJS（Go->JavaScript）
 
 # 2. 机器语言是如何跑起来的
-<a href = "https://www.bilibili.com/video/BV1EW411u7th">参考视频</a>
-
 ![](img/lec1/2.png)
 
 # 3. IR(Intermediate Representation) 中间表示
@@ -38,13 +36,13 @@ Lecture1-Overview
 > 作为一名程序员，你看到了什么？
 
 $$
-position = initial + rat * 60
+position = initial + rate * 60
 $$
 
 1. 词法: 标识符、数字、运算符
 2. 语法: 包含算术运算的赋值语句
 3. 语义: position, initial, rate 是数值类型
-4. 物理定律: 当前位置= 初始位置+ 速度× 时间
+4. 物理定律: 当前位置 = 初始位置 + 速度 × 时间
 5. 我们希望编译器可以懂词法、语法、语义，但是作为编译器, 它仅仅看到了一个字符串
 
 ### 3.3.1. 词法分析器(Lexer/Scanner)
