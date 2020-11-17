@@ -484,6 +484,7 @@ cc lex.yy.c -lfl -o lexical.out // 使用cc进行编译，-lfl表示需要调用
 ![](img/lec2/26.png)
 
 ## 2.4. 第三种：自动化词法分析器
+> 接受状态可以选择不接受，继续向下进行
 
 ### 2.4.1. 自动机(Automaton，自动机单数; Automata，自动机复数)
 
@@ -594,16 +595,16 @@ $$
 1. NFA 简洁易于理解, 方面描述语言L(A)
 2. DFA 易于判断$x \in L(A)$, 适合产生词法分析器
 3. 用NFA 描述语言, 用DFA 实现词法分析器
-4. RE => NFA => DFA => 词法分析器
+4. $RE \Rightarrow NFA \Rightarrow DFA \Rightarrow 词法分析器$
 5. 以下我们就要将上述的几个算法
 
-### 2.6.1. 从RE到NFA: Thompson 构造法
+### 2.6.1. 第一步：从RE到NFA:Thompson构造法
 ![](img/lec2/27.png)
 
 $$
-RE => NFA \\
-r => N(r) \\
-要求: L(N(r)) => L(r) \\
+RE \Rightarrow NFA \\
+r \Rightarrow N(r) \\
+要求: L(N(r)) \Rightarrow L(r) \\
 $$
 
 > Thompson 构造法的基本思想: 按结构归纳
@@ -635,75 +636,157 @@ $$
 4. Q:如果$N(s)$或$N(t)$的开始状态或接受状态不唯一, 怎么办?
 5. 根据**归纳假设**, N(s) 与N(t) 的开始状态与接受状态均**唯一**：我们的算法是递归构造的，前两种基本情况都为单输入单输出，所以在此基础上构造页必然为单输入单输出
 
-#### 
-6. 如果$s$,$t$是正则表达式, 则$st$是正则表达式。
+#### 2.6.1.5. 正则表达式st
+1. 如果$s$,$t$是正则表达式, 则$st$是正则表达式。
 
 ![](img/lec2/39.png)
 
-9.  根据**归纳假设**,$N(s)$与$N(t)$的开始状态与接受状态均**唯一**。
-10. 如果$s$是正则表达式, 则$s^∗$是正则表达式。
+2.  根据**归纳假设**,$N(s)$与$N(t)$的开始状态与接受状态均**唯一**。
+
+#### 2.6.1.6. 正则表达式$s^*$
+1. 如果$s$是正则表达式, 则$s^∗$是正则表达式。
 
 ![](img/lec2/40.png)
 
-11. 根据归纳假设, $N(s)$的开始状态与接受状态唯一。
+2. 根据归纳假设, $N(s)$的开始状态与接受状态唯一。
 
-### 2.6.2. $N(r)$ 的性质以及Thompson 构造法复杂度分析
+#### 2.6.1.7. $N(r)$的性质以及Thompson 构造法复杂度分析
 1. $N(r)$的开始状态与接受状态均唯一。
 2. 开始状态没有入边, 接受状态没有出边。
-3. $N(r)$的状态数$|S| \leq 2 × |r|$。($|r|:r$中运算符与运算分量的总和)
-4. 每个状态最多有两个$\epsilon-$入边与两个$\epsilon-$出边。
+3. (重要)$N(r)$的**状态数**$|S| \leq 2 × |r|$。($|r|:r$中运算符与运算分量的总和，也就是进行了多少次构造)：每一次构造最多有两个状态变更：一个输入和一个输出
+4. 每个状态最多有两个$\epsilon$-入边与两个$\epsilon$-出边。
 5. $\forall a \in \Sigma$, 每个状态最多有一个a-入边与一个a-出边。
 
+#### 2.6.1.8. 根据正则表达式构造状态机
 ![](img/lec2/41.png)
 
-### 2.6.3. DFA模仿NFA
+### 2.6.2. NFA转换为DFA
 ![](img/lec2/27.png)
 
 $$
-NFA => DFA \\
-N => D \\
+NFA \Rightarrow DFA \\
+N \Rightarrow D \\
 要求: L(D) = L(N) \\
 $$
 4. 从NFA 到DFA 的转换: 子集构造法(Subset/Powerset Construction)
-5. 思想: 用DFA 模拟NFA
+5. 思想: **用DFA模拟NFA**
 
+#### 2.6.2.1. 用DFA模拟NFA
 ![](img/lec2/42.png)
-![](img/lec2/43.png)
-![](img/lec2/44.png)
 
-1. 子集构造法($N => D$) 的原理:
-   1. $N : (\Sigma_N, S_N, n_0, \delta_N, F_N)$
-   2. $D : (\Sigma_D, S_D, d_0, \delta_D, F_D)$
-   3. $\Sigma_D = \Sigma_N$
-   4. $S_D \subseteq 2^{S^N} (\forall s_D \in S_D : s_D \subseteq S_N)$
-2. **初始状态**$d_0 = \epsilon-closure(s_0)$
-3. **转移函数**$\forall a \in \Sigma_D : \delta_D(s_D, a) = \epsilon-closure(move(s_D, a))$
-4. **接受状态集**$F_D = {s_D \in S_D | \exist f \in F_N. f \in s_D}$
-5. 子集构造法(N => D) 的实现: 使用栈实现$\epsilon-closure(T)$
+#### 2.6.2.2. 过程说明
+> 确定初始状态：初始化为A(和0对应)，$\epsilon$边等于不需要代价即可进行转移，所以我们0、1、2、4、7状态是完全等价的。
+
+$$
+step1: A = \{0, 1, 2, 4, 7\} \Leftrightarrow \epsilon-closure(0) \\
+step2: B = \{1, 2, 3, 4, 6, 7, 8\} \\
+note: A \xrightarrow[NFA]{a} \{3, 8\} \xrightarrow[move]{\epsilon-closure} B \\
+... \\
+$$
+
+![](img/lec2/43.png)
+
+> 确定接受状态：如果新的状态中包含有一个及以上的原来的接受状态，即为接受状态
+
+$$
+E = \{1, 2, 4, 5, 6, 7, 10\}
+$$
+
+> 确定转移函数
+
+$$
+对一个状态：\epsilon-closure(s) = \{t \in S_N | s \xrightarrow{\epsilon^*} t\} \\
+对所有状态：\epsilon-closure(T) = \bigcup\limits_{s\in T}\epsilon-closure(s) \\
+move操作：move(T, a) = \bigcup\limits_{s \in T}\delta(s, a)
+$$
+
+#### 2.6.2.3. 子集构造法($N => D$) 的原理:
+$$
+N : (\Sigma_N, S_N, n_0, \delta_N, F_N)\\
+D : (\Sigma_D, S_D, d_0, \delta_D, F_D)\\
+\Sigma_D = \Sigma_N\\
+S_D \subseteq 2^{S^N} (\forall s_D \in S_D : s_D \subseteq S_N)\\
+$$
+
+1. **初始状态**$d_0 = \epsilon-closure(s_0)$
+2. **转移函数**$\forall a \in \Sigma_D : \delta_D(s_D, a) = \epsilon-closure(move(s_D, a))$
+3. **接受状态集**$F_D = {s_D \in S_D | \exist f \in F_N. f \in s_D}$
+
+#### 2.6.2.4. 自己构造法的实现
+1. 子集构造法(N => D) 的实现: 使用栈实现$\epsilon-closure(T)$
 
 ![](img/lec2/45.png)
 
-6. 子集构造法(N => D) 的实现: 使用标记搜索过程构造状态集
+2. 子集构造法(N => D) 的实现: 使用标记搜索过程构造状态集
 
 ![](img/lec2/46.png)
 
-7. 子集构造法的复杂度分析:
-   1. $(|S_N| = n)$
-   2. $|S_D| = Θ(2^n)$
-   3. 最坏情况下, $|S_D| = \Omega(2^n)$
-8. “长度为m ≥ n 个字符的a, b 串, 且倒数第n 个字符是a”
-$Ln = (a|b)^∗a(a|b)^{n−1}$
+#### 2.6.2.5. 子集构造法的复杂度分析
+$$
+N \leftrightarrow NFA \\
+D \leftrightarrow DFA \\
+(|S_N| = n) \\
+|S_D| = Θ(2^n) \\
+最坏情况下, $|S_D| = \Omega(2^n) \\
+$$
+
+> 1. 长度为m ≥ n个字符的a,b串, 且倒数第n个字符是a
+> 2. $Ln = (a|b)^∗a(a|b)^{n−1}$
 
 ![](img/lec2/47.png)
 
-9. 练习(非作业): $m = n = 3$
-10. 闭包(Closure): $f-closure(T)$
-11. $\epsilon-closure(T):L^∗ =\bigcup\limits_{i=0}\limits^{\infty}L^i$
-12. $R^+$: 传递闭包
-13. $T => f(T) => f(f(T)) => f(f(f(T))) => . . .$直到找到x 使得f(x) = x (x 称为f 的不动点)
+> 1. a，b是一种简写
+> 2. 练习(非作业): $m = n = 3$
 
+#### 2.6.2.6. 闭包(Closure): $f-closure(T)$
+$$
+\epsilon-closure(T) \\
+L^∗ =\bigcup\limits_{i=0}\limits^{\infty}L^i \\
+R^+ \\
+T \Rightarrow f(T) \Rightarrow f(f(T)) \Rightarrow f(f(f(T))) \Rightarrow ... \\
+直到找到 x 使得f(x) = x (x 称为 f 的不动点) \\
+$$
+
+1. 首先说明一个集合T
+2. 然后说明一个函数f作用于T
+3. f(现实空间位置)->地图
+   1. f(world) -> 世界地图
+   2. f(世界地图) -> 当前地图所占的在世界地图中的局部
+   3. ...
+
+### 2.6.3. 第三步：DFA最小化
 ![](img/lec2/27.png)
 
-13. DFA 最小化
+![](img/lec2/44.png)
 
-101页
+1. **DFA最小化算法**基本思想: **等价**的状态可以合并
+2. for fundamental achievements in the design and analysis of algorithms and data structures
+
+#### 2.6.3.1. 如何定义等价状态?
+![](img/lec2/49.png)
+
+$$
+s \sim t \Leftrightarrow \forall a \in \Sigma. ((s \xrightarrow{a}s')\wedge(t\xrightarrow{a}t')) \Rightarrow (s' = t'). \\
+\sim:等价 \\
+\wedge:同时满足(and) \\
+$$
+
+> 如上定义过于严格，是错误的：因为上图是满足条件的，但是不是最小的DFA
+
+$$
+s \sim t \Leftrightarrow \forall a \in \Sigma. ((s \xrightarrow{a}s')\wedge(t\xrightarrow{a}t')) \Rightarrow (s' \sim t'). \\
+s \not\sim t \Leftrightarrow \exist a \in \Sigma. (s \xrightarrow{a} s')\wedge(t \xrightarrow{a} t') \wedge (s' \not\sim t')
+$$
+
+1. 根据上面第一个式子，我们不断合并等价的状态, 直到无法合并为止
+2. 但是, 这是一个递归定义, 从哪里开始呢?
+3. Q：所有接受状态都是等价的吗?
+
+![](img/lec2/50.png)
+
+$$
+s \not\sim t \Leftrightarrow \exist a \in \Sigma. (s \xrightarrow{a} s')\wedge(t \xrightarrow{a} t') \wedge (s' \not\sim t')
+$$
+
+1. 我们根据上面式子进行划分，而非合并
+2. 那么我们从哪里开始呢？
