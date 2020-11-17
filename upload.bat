@@ -1,7 +1,0 @@
-@echo off
-for /f "delims=" %%i in ("%cd%") do set folder=%%~ni
-
-git add .
-git commit -m "%folder% update at %date%"
-git push
-echo upload finish

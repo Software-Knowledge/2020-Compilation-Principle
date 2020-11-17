@@ -520,7 +520,7 @@ $$
    1. 字母表$\Sigma (\epsilon \notin \Sigma)$
    2. 有穷的状态集合$S$
    3. 唯一的初始状态$s_0 \in S$
-   4. 状态转移函数$\delta$，$\delta : S * (\Sigma \cup {\epsilon}) -> 2^S$，这里是不确定的
+   4. 状态转移函数$\delta$，$\delta : S \times (\Sigma \cup {\epsilon}) \rightarrow 2^S$，这里是不确定的
    5. 接受状态集合$F \subseteq S$
 
 ![](img/lec2/31.png)
@@ -573,7 +573,7 @@ $$
    1. 字母表$\Sigma (\epsilon \notin \Sigma)$
    2. 有穷的状态集合$S$
    3. 唯一的初始状态$s_0 \in S$
-   4. 状态转移函数$\delta$，$δ : S *\Sigma \rightarrow S$，对于一个$\Sigma$都有对应的唯一状态
+   4. 状态转移函数$\delta$，$δ : S \times \Sigma \rightarrow S$，对于一个$\Sigma$都有对应的唯一状态
    5. 接受状态集合$F \subseteq S$
 
 ![](img/lec2/36.png)
@@ -606,7 +606,7 @@ r => N(r) \\
 要求: L(N(r)) => L(r) \\
 $$
 
-1. Thompson 构造法的基本思想: 按结构归纳
+> Thompson 构造法的基本思想: 按结构归纳
 
 #### 2.6.1.1. 正则表达式的定义
 1. 给定字母表$\Sigma$, $\Sigma$上的正则表达式由且仅由以下规则定义:
