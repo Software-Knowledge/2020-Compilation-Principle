@@ -52,7 +52,7 @@ RB
 - 词法分析器相对比较简单，手写词法分析器可以做一些人为的优化。
 - gcc中，c语言的lex是1400多行，而c++的lex则是4000多行代码，number是最复杂的，包含不同进制、字母等问题，课程与gcc有一定差异
 
-## 2.1. 手写词法分析器
+## 2.1. 第一种：手写词法分析器
 1. 识别字符串s中符合**某种词法单元模式**的**所有词素**
 
 ```c++
@@ -317,7 +317,7 @@ public class Lexer {
 2. 否则, 调用错误处理模块(对应other), 报告**该字符有误**, 忽略该字符。
 3. 注意, 在sci中, 有时需要**回退**, 寻找最长匹配。
 
-## 2.2. Flex(词法分析器的生成器)
+## 2.2. 第二种：Flex(词法分析器的生成器)
 > Fast Lexical Analyzer Generator
 
 ![](img/lec2/23.png)
@@ -483,7 +483,217 @@ cc lex.yy.c -lfl -o lexical.out // 使用cc进行编译，-lfl表示需要调用
 
 ![](img/lec2/26.png)
 
-### 2.3.6. 目标: 正则表达式RE => 词法分析器
+## 2.4. 第三种：自动化词法分析器
+
+### 2.4.1. 自动机(Automaton，自动机单数; Automata，自动机复数)
+
+![](img/lec2/28.png)
+
+1. 两大要素: **状态集**$S$以及**状态转移函数**$\delta$
+2. 根据**表达/计算能力**的强弱, 自动机可以分为不同层次：如上图所示，表达能力和计算能力是等价的，组合逻辑(数字逻辑电路)
+3. 自动机会对应用于一种语言L(A)
+
+$$
+L(A) \subseteq L(A')
+$$
+
+![](img/lec2/29.png)
+
+### 2.4.2. 元胞自动机(Cellular Automaton)，也称为生命游戏)
+
+![](img/lec2/30.png)
+
+1. 无限网格，每一个网格有一个状态
+   1. 1代表alive，0代表dead
+   2. 状态转化：根据规则，比如周围八个邻居的当前状态会决定其本身的下一个状态
+2. 参考
+   1. <a href = "https://en.wikipedia.org/wiki/File:Conways_game_of_life_breeder_animation.gif">元胞自动机Gif</a>
+   2. <a href = "https://www.youtube.com/watch?v=C2vgICfQawE&t=270s">“生命游戏”(Game of Life) 史诗级巨作</a>
+
+## 2.5. 目标: 正则表达式RE => 词法分析器
 ![](img/lec2/27.png)
 
 > 终点固然令人向往, 这一路上的风景更是美不胜收
+
+### 2.5.1. NFA(Nondeteministic Finite Automaton)定义
+1. 非确定性有穷自动$A$是一个五元组$A = (\Sigma, S, s_0, \delta, F)$:
+   1. 字母表$\Sigma (\epsilon \notin \Sigma)$
+   2. 有穷的状态集合$S$
+   3. 唯一的初始状态$s_0 \in S$
+   4. 状态转移函数$\delta$，$\delta : S * (\Sigma \cup {\epsilon}) -> 2^S$，这里是不确定的
+   5. 接受状态集合$F \subseteq S$
+
+![](img/lec2/31.png)
+
+2. 约定: 所有没有对应出边的字符默认指向一个不存在的**空状态**:$\emptyset$，一般我们就不画空状态了。
+3. P和NP：NP(Nondeterministic)
+
+![](img/lec2/32.png)
+
+3. “which introduced the idea of **nondeterministic machines**, which has proved to be an enormously valuable concept.”
+4. (非确定性) 有穷自动机是一类极其简单的**计算**装置
+5. 它可以识别(接受/拒绝)$\Sigma$上的字符串
+
+### 2.5.2. 接受(Accept)定义
+1. (非确定性) 有穷自动机A接受字符串x, 当且仅当存在一条从开始状态$s_0$到某个接受状态$f\in F$、标号为x 的路径
+2. 因此, A 定义了一种语言L(A): 它能接受的所有字符串构成的集合
+
+![](img/lec2/33.png)
+
+$$
+aabb \in L(A) \\
+ababab \notin L(A) \\
+L(A) = L((a|b)^∗abb)
+$$
+
+### 2.5.3. 关于自动机A的两个基本问题
+1. Membership 问题: 给定字符串$x$, $x \in L(A)$?
+2. $L(A)$究竟是什么?
+
+![](img/lec2/34.png)
+
+$$
+aaa \in A? 可以被接受\\
+aab \in A? 不可以被接受\\
+L(A) = L((aa^∗|bb^∗)) \\
+$$
+
+![](img/lec2/35.png)
+
+> $\epsilon$不影响
+
+$$
+1011 \in L(A)? \\
+0011 \in L(A)? \\
+L(A) = {包含偶数个1或偶数个0的01串}
+$$
+
+### 2.5.4. DFA(Deterministic Finite Automaton)定义
+1. 确定性有穷自动机$A$是一个五元组$A = (\Sigma, S, s_0, \delta, F)$:
+   1. 字母表$\Sigma (\epsilon \notin \Sigma)$
+   2. 有穷的状态集合$S$
+   3. 唯一的初始状态$s_0 \in S$
+   4. 状态转移函数$\delta$，$δ : S *\Sigma \rightarrow S$，对于一个$\Sigma$都有对应的唯一状态
+   5. 接受状态集合$F \subseteq S$
+
+![](img/lec2/36.png)
+
+2. 约定: 所有没有对应出边的字符默认指向一个不存在的“死状态”
+
+$$
+aabb \in L(A) \\
+ababab \notin L(A) \\
+L(A) = L((a|b)^∗abb) \\
+$$
+
+![](img/lec2/33.png)
+
+> 上面的确定性自动机和非确定性自动机是等价的
+
+### 2.5.5. Summary
+1. NFA 简洁易于理解, 方面描述语言L(A)
+2. DFA 易于判断$x \in L(A)$, 适合产生词法分析器
+3. 用NFA 描述语言, 用DFA 实现词法分析器
+4. RE => NFA => DFA => 词法分析器
+5. 以下我们就要将上述的几个算法
+
+#### 2.5.5.1. 从RE到NFA: Thompson 构造法
+![](img/lec2/27.png)
+
+$$
+RE => NFA \\
+r => N(r) \\
+要求: L(N(r)) => L(r) \\
+$$
+
+### 2.5.6. Thompson 构造法的基本思想: 按结构归纳
+
+### 2.5.7. 正则表达式的定义
+1. 给定字母表$\Sigma$, $\Sigma$上的正则表达式由且仅由以下规则定义:
+   1. $\epsilon$是正则表达式;
+   2. $\forall a \in \Sigma$，$a$是正则表达式;
+   3. 如果$s$是正则表达式, 则$(s)$是正则表达式;
+   4. 如果$s$与$t$是正则表达式, 则$s|t$,$st$,$s^∗$也是正则表达式。
+2. $\epsilon$是正则表达式。
+
+![](img/lec2/37.png)
+
+3. 如果$s$是正则表达式, 则$(s)$是正则表达式;
+4. $N((s)) = N(s)$
+5. 如果$s, t$是正则表达式, 则$s|t$是正则表达式。
+
+![](img/lec2/38.png)
+
+6. Q:如果$N(s)$或$N(t)$的开始状态或接受状态不唯一, 怎么办?
+7. 根据**归纳假设**, N(s) 与N(t) 的开始状态与接受状态均**唯一**。
+8. 如果$s$,$t$是正则表达式, 则$st$是正则表达式。
+
+![](img/lec2/39.png)
+
+9.  根据**归纳假设**,$N(s)$与$N(t)$的开始状态与接受状态均**唯一**。
+10. 如果$s$是正则表达式, 则$s^∗$是正则表达式。
+
+![](img/lec2/40.png)
+
+11. 根据归纳假设, $N(s)$的开始状态与接受状态唯一。
+
+### 2.5.8. $N(r)$ 的性质以及Thompson 构造法复杂度分析
+1. $N(r)$的开始状态与接受状态均唯一。
+2. 开始状态没有入边, 接受状态没有出边。
+3. $N(r)$的状态数$|S| \leq 2 × |r|$。($|r|:r$中运算符与运算分量的总和)
+4. 每个状态最多有两个$\epsilon-$入边与两个$\epsilon-$出边。
+5. $\forall a \in \Sigma$, 每个状态最多有一个a-入边与一个a-出边。
+
+![](img/lec2/41.png)
+
+### 2.5.9. DFA模仿NFA
+![](img/lec2/27.png)
+
+$$
+NFA => DFA \\
+N => D \\
+要求: L(D) = L(N) \\
+$$
+4. 从NFA 到DFA 的转换: 子集构造法(Subset/Powerset Construction)
+5. 思想: 用DFA 模拟NFA
+
+![](img/lec2/42.png)
+![](img/lec2/43.png)
+![](img/lec2/44.png)
+
+1. 子集构造法($N => D$) 的原理:
+   1. $N : (\Sigma_N, S_N, n_0, \delta_N, F_N)$
+   2. $D : (\Sigma_D, S_D, d_0, \delta_D, F_D)$
+   3. $\Sigma_D = \Sigma_N$
+   4. $S_D \subseteq 2^{S^N} (\forall s_D \in S_D : s_D \subseteq S_N)$
+2. **初始状态**$d_0 = \epsilon-closure(s_0)$
+3. **转移函数**$\forall a \in \Sigma_D : \delta_D(s_D, a) = \epsilon-closure(move(s_D, a))$
+4. **接受状态集**$F_D = {s_D \in S_D | \exist f \in F_N. f \in s_D}$
+5. 子集构造法(N => D) 的实现: 使用栈实现$\epsilon-closure(T)$
+
+![](img/lec2/45.png)
+
+6. 子集构造法(N => D) 的实现: 使用标记搜索过程构造状态集
+
+![](img/lec2/46.png)
+
+7. 子集构造法的复杂度分析:
+   1. $(|S_N| = n)$
+   2. $|S_D| = Θ(2^n)$
+   3. 最坏情况下, $|S_D| = \Omega(2^n)$
+8. “长度为m ≥ n 个字符的a, b 串, 且倒数第n 个字符是a”
+$Ln = (a|b)^∗a(a|b)^{n−1}$
+
+![](img/lec2/47.png)
+
+9. 练习(非作业): $m = n = 3$
+10. 闭包(Closure): $f-closure(T)$
+11. $\epsilon-closure(T):L^∗ =\bigcup\limits_{i=0}\limits^{\infty}L^i$
+12. $R^+$: 传递闭包
+13. $T => f(T) => f(f(T)) => f(f(f(T))) => . . .$直到找到x 使得f(x) = x (x 称为f 的不动点)
+
+![](img/lec2/27.png)
+
+13. DFA 最小化
+
+101页
