@@ -408,14 +408,14 @@ L(matched\_stmt_1) \cap L(matched\_stmt_2) = \emptyset \\
 L(open\_stmt_1) \cap L(open\_stmt_2) = \emptyset \\
 $$
 
-1. 下标代表子句
+1. 下标代表子句   
 
 
-- 为什么不使用优雅、强大的**正则表达式**描述程序设计语言的语法?正则表达式的表达能力严格弱于上下文无关文法
+- 为什么不使用优雅、强大的**正则表达式**描述程序设计语言的语法?正则表达式的表达能力**严格弱于**上下文无关文法
 
 ![](img/lec3/10.png)
 
-- 每个正则表达式r对应的语言L(r) 都可以使用上下文无关文法来描述
+- 每个**正则表达式**r对应的语言L(r) 都可以使用**上下文无关文法**来描述
 
 $$
 r=(a|b)^∗abb
@@ -431,7 +431,7 @@ S \rightarrow \epsilon \\
 L = {a^nb^n|n \geq 0}
 $$
 
-- 该语言无法使用正则表达式来描述
+- 该语言**无法**使用正则表达式来描述
 - 定理:$L = \{a^nb^n | n ≥ 0\} 无法使用正则表达式描述
 - 反证法
   - 假设存在正则表达式r:$L(r) = L$
@@ -443,3 +443,257 @@ $$
 - $D(r)$也能接受a^{i+j}b^i，**矛盾**！
 - Pumping Lemma for Regular Languages：$L = {a^nb^n | n \geq 0}$
 - Pumping Lemma for Context-free Languages:$L = {a^nb^nc^n | n \geq 0}$
+- 只考虑无二义性的文法这意味着,每个句子对应唯一的一棵语法分析树
+
+# 4. LL(1)语法分析器
+1. 自顶向下的、递归下降的、预测分析的、适用于**LL(1)文法**的LL(1) 语法分析器
+2. **自顶向下**构建语法分析树
+3. **根节点**是文法的起始符号S
+4. 每个**中间节点**表示**对某个非终结符应用某个产生式进行推导**
+5. (Q :选择哪个非终结符, 以及选择哪个产生式)
+6. **叶节点**是词法单元流w
+7. 仅包含终结符号与特殊的文件结束符$
+8. **递归下降**的实现框架
+
+![](img/lec3/21.png)
+
+9. 为每个**非终结符**写一个递归函数
+10. 内部按需调用其它非终结符对应的递归函数
+
+$$
+S \rightarrow F \\
+S \rightarrow (S+F) \\
+F \rightarrow a \\
+w = ((a + a) + a) \\
+$$
+
+- 板书演示递归下降过程
+
+![](img/lec3/22.png)
+
+- 每次都选择语法分析树**最左边**的非终结符进行展开
+- 同样是展开非终结符S,
+- 为什么前两次选择了$S \rightarrow (S + F)$, 而第三次选择了$S \rightarrow F$?
+
+![](img/lec3/23.png)
+
+- 因为它们面对的**当前词法单元**不同
+- 使用**预测分析表**确定产生式
+- 指明了每个**非终结符**在面对不同的**词法单元或文件结束符**时,该选择哪个产生式(按编号进行索引) 或者报错
+
+![](img/lec3/24.png)
+
+## 4.1. Definition (LL(1) 文法)
+1. 如果文法G的**预测分析表**是**无冲突**的, 则G是LL(1) 文法。
+2. **无冲突**: 每个单元格里只有一个生成式(编号)
+
+![](img/lec3/25.png)
+
+3. 对于当前选择的**非终结符**,仅根据输入中**当前的词法单元**即可确定需要使用哪条产生式
+4. **递归下降的、预测分析**实现方法
+
+![](img/lec3/26.png)
+![](img/lec3/27.png)
+
+## 4.2. 如何计算给定文法G的预测分析表?
+1. $First(\alpha)$ 是可从$\alpha$推导得到的句型的**首终结符号**的集合
+
+## 4.3. Definition($First(\alpha)$集合)
+1. 对于任意的(产生式的右部)$\alpha \in (N \cup T)^*$
+
+$$
+FIRST(\alpha) = {t \in T \cup {\epsilon} | \alpha \xRightarrow[*]{} t\bet \wedgea \alpha \xRightarrow[*]{}\epsilon}
+$$
+
+2. 考虑非终结符A的所有产生式$A \rightarrow \alpha_1,A \rightarrow \alpha_2, ... ,A \rightarrow \alpha_m$,如果它们对应的$First(\alpha_i)$ 集合互不相交,则只需查看当前输入词法单元, 即可确定选择哪个产生式(或**报错**)
+3. $Follow(A)$是可能在某些句型中**紧跟在A右边的终结符**的集合
+
+## 4.4. Definition($Follow(A)$集合)
+1. 对于任意的(产生式的左部) 非终结符$A \in N$
+2. $Follow(A) = \{t \in T \cup \{\$\} | \exist w.S \xRightarrow[*]{} w = \beta A t \gamma\}$
+3. 考虑产生式:$A \rightarrow a$
+4. 如果从α 可能推导出空串($\alpha \xRightarrow[*]{} \epsilon$),
+5. 则只有当当前词法单元$t \in Follow(A)$, 才可以选择该产生式
+
+## 4.5. 先计算每个符号X的$First(X)$集合
+![](img/lec3/28.png)
+
+- 不断应用上面的规则, 直到每个$First(X)$都不再变化(**闭包**!!!)
+
+## 4.6. 再计算每个符号串α 的First(α) 集合
+$$
+\alpha = X \beta \\
+First(\alpha) = \begin{cases}
+   First(X)\ \epsilon \in L(X) \\
+   Fitst(X)\cup First(\beta)\ \epsilon \notin L(X) \
+\end{cases}
+$$
+
+$$
+X \rightarrow Y \\
+X \rightarrow a \\
+Y \rightarrow \epsilon \\
+Y \rightarrow c \\
+Z \rightarrow d \\
+Z \rightarrow XYZ \\
+$$
+
+$$
+FIRST(X) = \{a,c,\epsilon\} \\
+FIRST(Y) = \{c, \epsilon\} \\
+FIRST(Z) = \{a, c, d\} \\
+FIRST(XYZ) = FIRSY(X) = \{a, c\}\\
+$$
+
+## 4.7. 为每个非终结符X计算FOLLOW(X)集合
+![](img/lec3/29.png)
+
+- 不断应用上面的规则, 直到每个Follow(X) 都不再变化(**闭包**!!!)
+
+$$
+X \rightarrow Y \\
+X \rightarrow a \\
+Y \rightarrow \epsilon \\
+Y \rightarrow c \\
+Z \rightarrow d \\
+Z \rightarrow XYZ \\
+$$
+
+$$
+FOLLOW(X) = \{c, \$\} \\
+FOLLOW(Y) = \{a, c, d, \$\} \\
+FOLLOW(Z) = \emptyset \\
+$$
+
+## 4.8. 如何根据Firsts与Follow集合计算给定文法G的预测分析表?
+1. 按照以下规则, 在表格[A, t] 中填入生成式$A \rightarrow \alpha(编号)$
+
+$$
+t \in First(\alpha) \\
+\alpha \xRightarrow[*]{} \epsilon \wedge t \in Follow(A) \\
+$$
+
+## 4.9. Definition (LL(1) 文法)
+1. 如果文法G的**预测分析表**是**无冲突**的, 则G是LL(1)文法。
+
+## 4.10. LL(1) 语法分析器
+1. L:从左向右(left-to-right) 扫描输入
+2. L:构建最左(leftmost) 推导
+3. 1:只需向前看一个输入符号便可确定使用哪条产生式
+
+## 4.11. 非递归的预测分析方法
+![](img/lec3/30.png)
+![](img/lec3/31.png)
+
+## 4.12. 改造文法成为LL(1)文法
+1. 改造它
+2. 消除左递归
+3. 提取左公因子
+
+$$
+E \rightarrow E + T | E - T | T \\
+T \rightarrow T * F | T / F | F \\
+F \rightarrow (E) | id | num \\
+$$
+
+1. E 在**不消耗任何词法单元**的情况下, 直接递归调用E, 造成**死循环**
+2. $FIRST(E + T) \cap FIRST(T) \neq \emptyset$
+3. 不是LL(1)文法
+4. 消除左递归
+
+$$
+E \rightarrow E + T | T \\
+E \rightarrow TE' \\
+E' \rightarrow + TE' | \epsilon \\
+$$
+
+- 将左递归转为**右递归**
+- (注: 右递归对应右结合; 需要在后续阶段进行额外处理)
+
+$$
+A \rightarrow A\alpha_1 | A\alpha_2 |...A\alpha_m|\beta_1|\beta_2|...\beta_n \\
+$$
+
+- $\beta_i$都不以A开发
+
+$$
+A \rightarrow \beta_1A' | \beta_2A' | ... | \beta_nA' \\
+A' \rightarrow \alpha_1A'|\alpha_2A'|...|\alpha_mA'|\epsilon \\
+$$
+
+$$
+E \rightarrow E + T | E - T | T \\
+T \rightarrow T * F | T / F | F \\
+F \rightarrow (E) | id | num \\
+$$
+
+$$
+E \rightarrow TE' \\
+E' \rightarrow +TE' | \epsilon \\
+T \rightarrow FT' \\
+T' \rightarrow *FT' | \epsilon \\
+F \rightarrow (E)|id|num \\
+$$
+
+$$
+S \rightarrow Aa|b \\
+A \rightarrow Ac|Sb|\epsilon\\
+S \Rightarrow Aa \Rightarrow Sda \\
+$$
+
+![](img/lec3/32.png)
+
+$$
+A_k \rightarrow A_l\alpha \Rightarrow l > k
+$$
+
+$$
+S \rightarrow Aa|b \\
+A \rightarrow Ac|Sb|\epsilon \\
+A \rightarrow Ac|Aad|bd|\epsilon \\
+S \rightarrow Aa|b \\
+A \rightarrow bdA'|A' \\
+A' \rightarrow cA'|adA'|\epsilon \\
+$$
+
+$$
+E \rightarrow TE' \\
+E' \rightarrow +TE' | \epsilon \\
+T \rightarrow FT' \\
+T' \rightarrow *FT' | \epsilon \\
+F \rightarrow (E)|id|num \\
+$$
+
+![](img/lec3/33.png)
+
+$$
+FIRST(F) = \{(,id\} \\
+FIRST(T) = \{(,id\} \\
+FIRST(E) = \{(,id\} \\
+FIRST(E') =  \{+ , \epsilon\} \\
+FIRST(T') = \{*,\epsilon\} \\
+Follow(E) = Follow(E') = \{), \$\} \\
+Follow(T) = Follow(T') = \{+, ), \$\} \\
+Follow(F) = \{+, ∗, ), \$\} \\
+$$
+
+![](img/lec3/34.png)
+
+$$
+S \rightarrow iEtS|iEtSeS|a \\
+E \rightarrow b
+$$
+
+- 提取左公因子
+
+$$
+S \rightarrow iEtSS'|a \\
+S' \rightarrow eS|\epsilon \\
+E \rightarrow b \\
+$$
+
+![](img/lec3/35.png)
+
+- 解决二义性: 选择$S' \rightarrow eS$, 将else与前面最近的then关联起来
+
+# 5. 错误恢复
