@@ -684,7 +684,9 @@ $$
 \end{array}
 $$
 
-> 对于每一个生成式分别执行如上两步
+> 对于每一个生成式只要满足上面一条规则即可(或关系)
+
+![](img/lec3/53.png)
 
 ## 4.10. Definition (LL(1) 文法)
 > 如果文法G的**预测分析表**是**无冲突**的, 则G是LL(1)文法。
@@ -908,7 +910,18 @@ $$
 4. **叶节点**是词法单元流w$
 5. 仅包含终结符号与特殊的**文件结束符$**
 
-## 5.2. 推导与归约
+## 5.2. 自顶向下的“推导”与自底向上的“归约”
+$$
+E \xRightarrow[rm]{} T \xRightarrow[rm]{} T * F \xRightarrow[rm]{} T * id \xRightarrow[rm]{} F * id \xRightarrow[rm]{} id * id
+$$
+
+![](img/lec3/46.png)
+
+$$
+E \Leftarrow T \Leftarrow T * F \Leftarrow T * id \Leftarrow F * id \Leftarrow id * id
+$$
+
+## 5.3. 推导与归约
 1. 从**产生式**的角度看，是推导：$A \rightarrow \alpha$
 2. 从**输入**的角度看，是规约：$A \leftarrow \alpha$
 
@@ -921,7 +934,7 @@ $$
 
 3. 自底向上语法分析器为输入构造**反向推导**
 
-## 5.3. LR(∗) 语法分析器
+## 5.4. LR(∗) 语法分析器
 1. L:**从左向右**(left-to-right) 扫描输入
 2. R:构建**反向**(reverse)**最右**(leftmost)推导
 3. 在最右推导中, 最左叶节点最后才被处理
@@ -939,56 +952,62 @@ $$
 \end{array}
 $$
 
-## 5.4. 栈上操作：移入与规约
-![](img/lec3/37.png)
+## 5.5. 栈上操作：移入与规约
 
-1. 部分构建的语法分析树的**上边缘**与**剩余的输入**构成当前句型
+1. 在任意时刻, 语法分析树的**上边缘**与**剩余的输入**构成当前句型
 
 ![](img/lec3/38.png)
 
+$$
+E \Leftarrow T \Leftarrow T * F \Leftarrow T * id \Leftarrow F * id \Leftarrow id * id
+$$
+
 2. LR语法分析器使用**栈**存储语法分析树的**上边缘**
 
-## 5.5. Definition(句柄(Handle))
-1. 在输入串的(唯一)反向最右推导中, 如果下一步是逆用产生式$A \rightarrow \alpha$将$\alpha$规约为$A$, 则称$\alpha$是当前句型的句柄。
+## 5.6. 栈上操作
+![](img/lec3/37.png)
 
-![](img/lec3/39.png)
+1. 两大操作: **移入输入符号**与**按产生式归约**
+2. 直到栈中仅剩开始符号S, 且输入已结束, 则成功停止
 
-2. LR语法分析器的关键就是高效**寻找每个归约步骤所使用的句柄**。
-
-## 5.6. 句柄可能在哪里？
-1. Theorem：存在一种LR语法分析方法，保证句柄总是出现在栈顶。
-
-![](img/lec3/40.png)
+## 5.7. 基于栈的LR语法分析器
+1. Q1:何时归约? (何时移入?)
+2. Q2:按哪条产生式进行归约?
 
 $$
 \begin{array}{l}
-   S \xRightarrow[rm]{*} \alpha Az  \xRightarrow[rm]{*} \alpha\beta Byz  \xRightarrow[rm]{*} \alpha\beta\gamma yz \\
-   S \xRightarrow[rm]{*} \alpha BxAz  \xRightarrow[rm]{*} \alpha Bxyz  \xRightarrow[rm]{*} \alpha\gamma xy \\
+   E \rightarrow E + T \\
+   E \rightarrow T \\
+   T \rightarrow T * F \\
+   T \rightarrow F \\
+   F \rightarrow (E) \\
+   F \rightarrow id \\
+   w = id * id \\
 \end{array}
 $$
-
-2. Theorem:存在一种LR 语法分析方法, 保证句柄总是出现在栈顶。
-3. LR语法分析器在进行一次归约后, 接着移入零个或多个符号, 继续寻找下一个句柄
-4. 为什么第一个F 被直接归约为T,而第二个F 则与T ∗ F 一起被归约为T?
-
 ![](img/lec3/37.png)
 
-1. **栈**刻画了语法分析器目前所知的所有信息,
-2. **隐含**了语法分析器的当前状态
+1. 为什么第二个F 以T ∗ F 整体被归约为T?
+2. 这与**栈**的当前状态“T ∗ F” 相关
 
+### 5.7.1. LR(0) 分析表指导LR(0) 语法分析器
 ![](img/lec3/41.png)
 
-1. LR(0) 分析表指导LR(0) 语法分析器
-2. 在当前状态(编号)下, 面对当前文法符号时, 该采取什么动作
+1. 在当前状态(编号)下, 面对当前文法符号时, 该采取什么动作
+2. action 表指明动作, goto 表仅用于归约时的状态转换
 
 ![](img/lec3/41.png)
 ![](img/lec3/42.png)
 
-## 5.7. Definition (LR(0)文法)
+### 5.7.2. Definition (LR(0)文法)
 1. 如果文法G的LR(0)分析表是无冲突的, 则G是LR(0)文法。
 2. **无冲突**: ACTION表中每个单元格最多只有一种动作
 
-## 5.8. 再次板书演示“栈” 上操作: 移入与规约
+![](img/lec3/41.png)
+
+3. 两类可能的冲突: “移入/归约” 冲突、“归约/归约” 冲突
+
+### 5.7.3. 再次板书演示“栈” 上操作: 移入与规约
 
 $$
 \begin{array}{l}
@@ -1005,21 +1024,67 @@ $$
 ![](img/lec3/41.png)
 
 - $w = (x,x,x)$
-- **栈**中**明确**包含了语法分析器的状态
+- 栈中存储语法分析器的状态(编号), “编码” 了语法分析树的上边缘
 
 ![](img/lec3/43.png)
 ![](img/lec3/44.png)
 
-## 5.9. 如何构造LR(0)分析表?
+### 5.7.4. 如何构造LR(0)分析表?
 ![](img/lec3/41.png)
 
 1. LR(0)分析表指导LR(0)语法分析器
 2. 在**当前状态(编号)**下, 面对**当前文法符号**时,该采取什么动作
 
-## 5.10. LR(0) 句柄寻找自动机
+### 5.7.5. 状态是什么? 如何跟踪状态?
+![](img/lec3/41.png)
+
+1. 状态是语法分析树的上边缘, 存储在栈中
+2. 可以用自动机跟踪状态变化(自动机中的路径 $\Leftrightarrow$栈中符号/状态编号)
+
+### 5.7.6. 何时归约? 使用哪条产生式进行归约?
+![](img/lec3/41.png)
+
+1. 必要条件: 当前状态中, 已观察到某个产生式的完整右部
+2. 对于LR(0) 文法, 这是当前唯一的选择
+
+### 5.7.7. Definition(句柄(Handle))
+1. 在输入串的(唯一)反向最右推导中, 如果下一步是逆用产生式$A \rightarrow \alpha$将$\alpha$规约为$A$, 则称$\alpha$是当前句型的句柄。
+
+![](img/lec3/39.png)
+
+2. LR语法分析器的关键就是高效**寻找每个归约步骤所使用的句柄**。
+
+## 5.8. 句柄可能在哪里？
+1. Theorem：存在一种LR语法分析方法，保证句柄总是出现在栈顶。
+
+![](img/lec3/40.png)
+
+$$
+\begin{array}{l}
+   S \xRightarrow[rm]{*} \alpha Az  \xRightarrow[rm]{*} \alpha\beta Byz  \xRightarrow[rm]{*} \alpha\beta\gamma yz \\
+   S \xRightarrow[rm]{*} \alpha BxAz  \xRightarrow[rm]{*} \alpha Bxyz  \xRightarrow[rm]{*} \alpha\gamma xy \\
+\end{array}
+$$
+
+2. 可以用自动机跟踪状态变化(自动机中的路径 $\Leftrightarrow$ 栈中符号/状态编号)
+
+2. Theorem:存在一种LR 语法分析方法, 保证句柄总是出现在栈顶。
+3. 在自动机的当前状态识别可能的句柄(观察到的完整右部)(自动机的当前状态 $\Leftrightarrow$ 栈顶)
+4. LR(0) 句柄识别有穷状态自动机(Handle-Finding Automaton)
+
 ![](img/lec3/45.png)
 
-## 5.11. Definition (LR(0) 项(Item))
+## 5.9. LR(0) 句柄识别自动机
+1. 为给定的文法G构造相应的句柄识别自动机
+2. 该自动机用于识别该文法G 所允许的所有可能的句柄
+
+![](img/lec3/45.png)
+
+3. 状态是什么? 状态之间如何转移?
+
+### 5.9.1. 状态刻画了“当前观察到的针对所有产生式的右部的前缀”
+
+#### 5.9.1.1. Definition (LR(0) 项(Item))
 1. 一个文法G的一个LR(0)项是G的一个产生式再加上一个位于体部某处的点。
 
 $$
@@ -1034,12 +1099,66 @@ $$
 
 2. 产生式$A\epsilon$只有一个项$A \rightarrow ·$
 3. 项指明了语法分析器已经看到了一个产生式的哪些部分
+4. 点指示了栈顶, 左边(与路径) 是栈中内容, 右边是期望看到的文法符号
 
-## 5.12. Definition (项集)
+### 5.9.2. 状态刻画了“当前观察到的针对所有产生式的右部的前缀”
 
-## 5.13. Definition (项集族)
+#### 5.9.2.1. Definition (项集)
+1. 项集就是若干项构成的集合。
+2. 因此, 句柄识别自动机的一个状态可以表示为一个项集
 
-## 5.14. Definition (增广文法(Augmented Grammar))
+#### 5.9.2.2. Definition (项集族)
+1. 项集族就是若干项集构成的集合。
+2. 因此, 句柄识别自动机的状态集可以表示为一个项集族
+
+#### 5.9.2.3. Definition (增广文法(Augmented Grammar))
 1. 文法G 的增广文法是在G 中加入产生式$S' \rightarrow S$得到的文法。
+2. 目的: 告诉语法分析器何时停止分析并接受输入符号串
+3. 当语法分析器面对$且要使用S′ → S 进行归约时, 输入符号串被接受
+4. 注: 此“接受” (输入串) 非彼“接受” (句柄识别自动机)
 
 ![](img/lec3/45.png)
+
+### 5.9.3. 几个问题
+1. 初始状态是什么?
+2. 状态之间如何转移?
+
+1. 点指示了栈顶, 左边(与路径) 是栈中内容, 右边是期望看到的文法符号
+
+![](img/lec3/47.png)
+
+![](img/lec3/48.png)
+
+$$
+\begin{array}{l}
+   GOTO(I, X) = CLOSURE(\{[A \rightarrow \alpha X ·\beta ] | [A \rightarrow \above · X \beta] \in I \}) \\
+   X \in N \cup T \cup \{\$\} \\
+\end{array}
+$$
+
+![](img/lec3/49.png)
+
+### 5.9.4. 将LR(0) 自动机表示成LR(0) 分析表
+![](img/lec3/50.png)
+
+1. goto 函数被拆分成action 表(针对终结符) 与goto 表(针对非终结符)
+
+![](img/lec3/51.png)
+
+2. 归约动作:$A \rightarrow \alpha · \in s$，则有ACTION[s, a] = r_
+3. a: 除了已经填入action[s, _] = s_ 的其余所有终结符
+
+### 5.9.5. LR(0) 分析表每一行(状态) 所选用的归约产生式是相同的
+![](img/lec3/52.png)
+
+- 归约时不需要向前看, 这就是“0” 的含义
+
+## 5.10. LR(0) 语法分析器
+1. L:从左向右(Left-to-right) 扫描输入
+2. R:构建反向(Reverse) 最右推导
+3. 0:归约时无需向前看
+4. LR(0) 自动机与栈之间的互动关系
+5. 向前走 $\Leftrightarrow$ 移入
+6. 回溯 $\Leftrightarrow$ 归约
+7. 自动机才是本质, 栈是实现方式(用栈记住“来时的路”, 以便回溯)
+8. Q:为什么是个有穷状态自动机?
