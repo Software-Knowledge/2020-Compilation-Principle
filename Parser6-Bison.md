@@ -1,4 +1,7 @@
-# 1. Bison:语法分析器的生成器
+Bison:语法分析器的生成器
+---
+
+# 1. 简单使用概述
 
 1. 多行表达式文法:每行都以换行符结束;允许有空行
 
@@ -12,14 +15,14 @@
 
 ![](img/lec3/82.png)
 
-## 1.1. 使用
+# 2. 使用
 ```
 bison -d -v expr.y
 -d: (definition)产生expr.tab.h与expr.tab.c
 -v: "warning: 20shift/reduceconflicts"(expr.output)
 ```
 
-## 1.2. 使用结合性/优先级解决移入/归约冲突
+# 3. 使用结合性/优先级解决移入/归约冲突
 1. 原则上,可以为每个终结符以及每条产生式赋予适当的结合性与优先级
 
 ![](img/lec3/83.png)
@@ -41,7 +44,7 @@ gcc main.c lex.yy.c expr.tab.c -lfl -o expr
 ./expr expr.cmm
 ```
 
-## 1.3. 错误恢复
+# 4. 错误恢复
 1. 使用错误产生式(Error Production)进行错误恢复
 2. $A \rightarrow error\ \alpha\ \alpha \in N∗$
 3. 调整状态：不断出栈,直到碰到某状态包含形如$A \rightarrow error\ \alpha$的项;移入error
