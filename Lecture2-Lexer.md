@@ -23,7 +23,7 @@ Lecture2-Lexer
 
 - int/if:关键词
 - ws:空格、制表符、换行符
-- comment:“//” 开头的一行注释或者“/* */” 包围的多行注释
+- comment:"//" 开头的一行注释或者"/* */" 包围的多行注释
 
 ## 1.2. 词法分析示例
 ```c++
@@ -354,11 +354,11 @@ public class Lexer {
 1. 字母表$\Sigma$上的串(s)是由$\Sigma$中符号构成的一个**有穷**序列。
 2. 空串:$|\epsilon| = 0$
 
-#### 2.2.5.1. Definition (串上的“连接” 运算)
+#### 2.2.5.1. Definition (串上的"连接" 运算)
 1. x = dog, y = house xy = doghouse
 2. $s \epsilon = \epsilon s = s$
 
-#### 2.2.5.2. Definition (串上的“指数” 运算)
+#### 2.2.5.2. Definition (串上的"指数" 运算)
 1. $s^0 \triangleq ϵ$
 2. $s^i \triangleq ss^{i-1}, i>0$
 
@@ -509,7 +509,7 @@ $$
    2. 状态转化：根据规则，比如周围八个邻居的当前状态会决定其本身的下一个状态
 2. 参考
    1. <a href = "https://en.wikipedia.org/wiki/File:Conways_game_of_life_breeder_animation.gif">元胞自动机Gif</a>
-   2. <a href = "https://www.youtube.com/watch?v=C2vgICfQawE&t=270s">“生命游戏”(Game of Life) 史诗级巨作</a>
+   2. <a href = "https://www.youtube.com/watch?v=C2vgICfQawE&t=270s">"生命游戏"(Game of Life) 史诗级巨作</a>
 
 ## 2.5. 目标: 正则表达式RE => 词法分析器
 ![](img/lec2/27.png)
@@ -535,7 +535,7 @@ $$
 
 ![](img/lec2/32.png)
 
-3. “which introduced the idea of **nondeterministic machines**, which has proved to be an enormously valuable concept.”
+3. "which introduced the idea of **nondeterministic machines**, which has proved to be an enormously valuable concept."
 4. (非确定性) 有穷自动机是一类极其简单的**计算**装置
 5. 它可以识别(接受/拒绝)$\Sigma$上的字符串
 
@@ -583,7 +583,7 @@ $$
 
 ![](img/lec2/36.png)
 
-> 约定: 所有没有对应出边的字符默认指向一个不存在的“死状态”
+> 约定: 所有没有对应出边的字符默认指向一个不存在的"死状态"
 
 $$
 aabb \in L(A) \\
